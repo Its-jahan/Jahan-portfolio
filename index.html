@@ -1358,6 +1358,125 @@
         linear-gradient(180deg, #DAD6CB, #C8C4B7);
     }
 
+    .port {
+      cursor: pointer;
+    }
+
+    .port .preview.has-cover {
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    .port .preview.has-cover::before {
+      inset: 0;
+      border-radius: 0;
+      background:
+        linear-gradient(180deg, rgba(26, 25, 22, 0.10), rgba(26, 25, 22, 0.42)),
+        linear-gradient(90deg, rgba(26, 25, 22, 0.14), rgba(26, 25, 22, 0));
+    }
+
+    .port .preview.has-cover span {
+      color: #F4F1EB;
+      text-shadow: 0 1px 12px rgba(0, 0, 0, .35);
+    }
+
+    .project-page {
+      display: none;
+      min-height: 100vh;
+      padding: 108px var(--pad-x) 72px;
+    }
+
+    body.project-open .project-page {
+      display: block;
+    }
+
+    body.project-open main.wrap,
+    body.project-open footer.foot {
+      display: none;
+    }
+
+    .project-shell {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .project-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 32px;
+      color: var(--mute);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .project-hero {
+      display: grid;
+      grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+      gap: 48px;
+      align-items: end;
+    }
+
+    .project-hero h1 {
+      margin: 10px 0 18px;
+      font: 500 clamp(48px, 8vw, 104px)/.88 var(--serif);
+      letter-spacing: -0.035em;
+    }
+
+    .project-hero p {
+      margin: 0;
+      max-width: 560px;
+      color: var(--mute);
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .project-cover {
+      min-height: 460px;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.48), rgba(255,255,255,0)),
+        repeating-linear-gradient(135deg, rgba(26,25,22,.035) 0 2px, transparent 2px 14px),
+        linear-gradient(180deg, #DAD6CB, #C8C4B7);
+      background-position: center;
+      background-size: cover;
+      box-shadow: var(--shadow-lift);
+      border: 1px solid var(--rule);
+    }
+
+    .project-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 28px;
+    }
+
+    .project-meta span {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .08em;
+      color: var(--mute);
+      border: 1px solid var(--rule-strong);
+      padding: 5px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      background: var(--surface-2);
+    }
+
+    .project-body {
+      margin-top: 54px;
+      padding-top: 28px;
+      border-top: 1px solid var(--rule);
+      max-width: 720px;
+      color: var(--ink-2);
+      font-size: 15px;
+      line-height: 1.8;
+      white-space: pre-line;
+    }
+
     .port .preview>* {
       position: relative;
       z-index: 1
@@ -1713,6 +1832,15 @@
     }
 
     @media (max-width: 720px) {
+      .project-hero {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+
+      .project-cover {
+        min-height: 320px;
+      }
+
       .hgrid {
         grid-template-columns: 1fr;
         gap: 24px
@@ -2672,6 +2800,8 @@
     </div>
   </footer>
 
+  <div class="project-page" id="project-page" aria-live="polite"></div>
+
   <!-- ════════════════════════════════════
        ADMIN PANEL
   ════════════════════════════════════ -->
@@ -3423,6 +3553,566 @@
         const data = { ...fileData, ...draftData };
         if (Object.keys(data).length > 0) applyData(data);
       })();
+    })();
+
+    /* ═══════════════════════════════════════════════════
+       11. SECURE ADMIN, PERSISTENT PROJECTS, BRIEFS
+    ═══════════════════════════════════════════════════ */
+    (function () {
+      const AUTH_KEY = 'portfolio_admin_auth';
+      const PASS_KEY = 'portfolio_admin_password';
+      const DATA_KEY = 'portfolio_admin_v2';
+      const panel = document.getElementById('admin-panel');
+      const toggle = document.getElementById('admin-toggle');
+      const closeBtn = document.getElementById('adm-close');
+      const saveBtn = document.getElementById('adm-save');
+      const resetBtn = document.getElementById('adm-reset');
+      const expList = document.getElementById('adm-exp-list');
+      const portList = document.getElementById('adm-port-list');
+      const projectPage = document.getElementById('project-page');
+      let latestData = readPublishedData();
+
+      const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+      const slugify = (value) => String(value || 'project').toLowerCase().trim()
+        .replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'project';
+
+      function readPublishedData() {
+        try {
+          return JSON.parse(document.getElementById('portfolio-data')?.textContent.trim() || '{}');
+        } catch (e) {
+          return {};
+        }
+      }
+
+      function isAuthed() {
+        return sessionStorage.getItem(AUTH_KEY) === '1';
+      }
+
+      function getPassword() {
+        return sessionStorage.getItem(PASS_KEY) || '';
+      }
+
+      function setAuthed(password) {
+        sessionStorage.setItem(AUTH_KEY, '1');
+        sessionStorage.setItem(PASS_KEY, password);
+      }
+
+      function ensureLogin() {
+        if (isAuthed()) return true;
+        showLogin();
+        return false;
+      }
+
+      function showLogin() {
+        let overlay = document.getElementById('admin-login');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.id = 'admin-login';
+          overlay.innerHTML = `
+            <div class="admin-login-card">
+              <div>
+                <div class="eyebrow">Admin</div>
+                <h3>Enter password</h3>
+              </div>
+              <input id="admin-login-password" type="password" autocomplete="current-password" placeholder="Password">
+              <button id="admin-login-submit" class="grad-pill" type="button">Login <span class="arr">→</span></button>
+              <small id="admin-login-error"></small>
+            </div>`;
+          document.body.appendChild(overlay);
+          const style = document.createElement('style');
+          style.textContent = `
+            #admin-login{position:fixed;inset:0;z-index:12000;display:flex;align-items:center;justify-content:center;background:rgba(26,25,22,.58);backdrop-filter:blur(18px);padding:24px}
+            .admin-login-card{width:min(360px,100%);background:#18171A;color:#F4F1EB;border:1px solid rgba(255,255,255,.1);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.38);padding:22px;display:grid;gap:16px}
+            .admin-login-card h3{margin:6px 0 0;font:500 32px/.95 var(--serif);letter-spacing:-.02em}
+            .admin-login-card input{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:#fff;font:400 14px var(--sf);padding:12px;outline:none}
+            .admin-login-card small{min-height:16px;color:#E2615E}`;
+          document.head.appendChild(style);
+          overlay.querySelector('#admin-login-submit').addEventListener('click', submitLogin);
+          overlay.querySelector('#admin-login-password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') submitLogin();
+          });
+        }
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.querySelector('#admin-login-password')?.focus(), 30);
+      }
+
+      async function submitLogin() {
+        const input = document.getElementById('admin-login-password');
+        const error = document.getElementById('admin-login-error');
+        const password = input?.value || '';
+        if (error) error.textContent = '';
+        try {
+          const res = await fetch('/api/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password })
+          });
+          if (!res.ok) throw new Error('Unauthorized');
+        } catch (e) {
+          if (error) error.textContent = 'Wrong password.';
+          return;
+        }
+        setAuthed(password);
+        document.getElementById('admin-login').style.display = 'none';
+        openAdmin();
+      }
+
+      function openAdmin() {
+        if (!ensureLogin()) return;
+        panel.classList.add('open');
+        toggle.classList.add('open');
+        buildExpAdmin();
+        buildPortAdmin();
+        loadBriefs();
+      }
+
+      function closeAdmin() {
+        panel.classList.remove('open');
+        toggle.classList.remove('open');
+      }
+
+      function installAdminShell() {
+        toggle.style.display = 'none';
+        if (!document.querySelector('[data-tab="briefs"]')) {
+          const row = document.querySelectorAll('.adm-tabs')[1] || document.querySelector('.adm-tabs');
+          const btn = document.createElement('button');
+          btn.className = 'adm-tab';
+          btn.dataset.tab = 'briefs';
+          btn.textContent = 'Briefs';
+          row.appendChild(btn);
+        }
+        if (!document.getElementById('adm-briefs')) {
+          const section = document.createElement('div');
+          section.className = 'adm-section';
+          section.id = 'adm-briefs';
+          section.innerHTML = '<div class="adm-badge"><i></i> New briefs</div><div id="adm-brief-list"><small>Login to load briefs.</small></div>';
+          document.querySelector('.adm-body').appendChild(section);
+        }
+        document.querySelector('.adm-head small').textContent = 'Password protected publishing';
+        saveBtn.textContent = 'Publish';
+      }
+
+      function switchTab(tabName) {
+        document.querySelectorAll('.adm-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+        document.querySelectorAll('.adm-section').forEach(s => s.classList.remove('active'));
+        document.getElementById('adm-' + tabName)?.classList.add('active');
+        if (tabName === 'exp') buildExpAdmin();
+        if (tabName === 'port') buildPortAdmin();
+        if (tabName === 'briefs') loadBriefs();
+      }
+
+      function collectFixedFields() {
+        const data = {};
+        document.querySelectorAll('#admin-panel input[id^="adm-"], #admin-panel textarea[id^="adm-"]').forEach(el => {
+          if (!['adm-exp-list', 'adm-port-list', 'adm-brief-list'].includes(el.id)) data[el.id] = el.value;
+        });
+        return data;
+      }
+
+      function getExperiencesFromDom() {
+        return [...document.querySelectorAll('#experience .exp-row')].map(row => ({
+          yr: row.querySelector('.yr')?.textContent.trim() || '',
+          co: row.querySelector('.co')?.textContent.trim() || '',
+          ro: row.querySelector('.ro')?.textContent.trim() || '',
+          bullets: [...row.querySelectorAll('li')].map(li => li.textContent.trim()).filter(Boolean)
+        })).filter(item => item.yr || item.co || item.ro || item.bullets.length);
+      }
+
+      function getProjectsFromDom() {
+        return [...document.querySelectorAll('#portfolio .port')].map((art, i) => ({
+          slug: art.dataset.slug || slugify(art.querySelector('h3')?.textContent || `project-${i + 1}`),
+          cat: art.querySelector('.cat')?.textContent.trim() || '',
+          h3: art.querySelector('h3')?.textContent.trim() || '',
+          year: art.querySelector('.year')?.textContent.trim() || '',
+          desc: art.querySelector('p')?.textContent.trim() || '',
+          details: art.dataset.details || art.querySelector('p')?.textContent.trim() || '',
+          cover: art.dataset.cover || '',
+          tags: [...art.querySelectorAll('.stack span')].map(s => s.textContent.trim()).filter(Boolean)
+        })).filter(item => item.h3 || item.desc);
+      }
+
+      function collectAllData() {
+        return {
+          ...latestData,
+          ...collectFixedFields(),
+          experiences: getExperiencesFromDom(),
+          projects: getProjectsFromDom()
+        };
+      }
+
+      function bulletHtml(text) {
+        const clean = esc(text);
+        const match = clean.match(/^([^.!?]{2,48}[.!?])\s+(.+)$/);
+        return match ? `<li><b>${match[1]}</b> ${match[2]}</li>` : `<li>${clean}</li>`;
+      }
+
+      function renderExperiences(experiences) {
+        if (!Array.isArray(experiences)) return;
+        const section = document.querySelector('#experience > .hgrid > div:last-child');
+        if (!section) return;
+        section.innerHTML = experiences.map((item, i) => `
+          <div class="exp-row reveal in" data-delay="${i}">
+            <div class="yr">${esc(item.yr)}</div>
+            <div><div class="co">${esc(item.co)}</div><div class="ro">${esc(item.ro)}</div></div>
+            <ul>${(item.bullets || []).map(bulletHtml).join('')}</ul>
+          </div>`).join('');
+      }
+
+      function renderProjects(projects) {
+        if (!Array.isArray(projects)) return;
+        const section = document.querySelector('#portfolio > .hgrid > div:last-child');
+        if (!section) return;
+        section.innerHTML = projects.map((item, i) => {
+          const slug = esc(item.slug || slugify(item.h3 || `project-${i + 1}`));
+          const cover = item.cover || '';
+          const style = cover ? ` style="background-image:url('${esc(cover)}')"` : '';
+          const coverClass = cover ? ' has-cover' : '';
+          const tags = Array.isArray(item.tags) ? item.tags : String(item.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+          return `
+            <article class="port reveal in" data-delay="${i}" data-slug="${slug}" data-cover="${esc(cover)}" data-details="${esc(item.details || item.desc || '')}">
+              <div>
+                <div class="head">
+                  <div><div class="cat">${esc(item.cat)}</div><h3>${esc(item.h3)}</h3></div>
+                  <div class="year">${esc(item.year)}</div>
+                </div>
+                <p>${esc(item.desc)}</p>
+                <div class="stack">${tags.map(t => `<span>${esc(t)}</span>`).join('')}</div>
+              </div>
+              <div class="preview${coverClass}"${style}>
+                <span class="badge-num">/${String(i + 1).padStart(2, '0')} · CASE STUDY</span>
+                <span>// FIG / ${String(i + 1).padStart(2, '0')}</span><span>Open project</span>
+              </div>
+            </article>`;
+        }).join('');
+      }
+
+      function applyStructuredData(data) {
+        latestData = { ...latestData, ...data };
+        if (Array.isArray(data.experiences)) renderExperiences(data.experiences);
+        if (Array.isArray(data.projects)) renderProjects(data.projects);
+      }
+
+      function buildExpAdmin() {
+        if (!expList) return;
+        const experiences = getExperiencesFromDom();
+        expList.innerHTML = experiences.map((item, i) => `
+          <div class="adm-entry" data-exp-card="${i}">
+            <div class="adm-entry-head">
+              <span class="adm-entry-num">Experience ${String(i + 1).padStart(2, '0')}</span>
+              <button class="adm-del" data-action="remove-exp" data-i="${i}" title="Remove">x</button>
+            </div>
+            <div class="adm-row">
+              <div class="adm-group"><label class="adm-label">Dates</label><input class="adm-input" data-exp="${i}" data-field="yr" value="${esc(item.yr)}"></div>
+              <div class="adm-group"><label class="adm-label">Company</label><input class="adm-input" data-exp="${i}" data-field="co" value="${esc(item.co)}"></div>
+            </div>
+            <div class="adm-group"><label class="adm-label">Role</label><input class="adm-input" data-exp="${i}" data-field="ro" value="${esc(item.ro)}"></div>
+            <div class="adm-group"><label class="adm-label">Bullet points</label><textarea class="adm-textarea" data-exp="${i}" data-field="bullets" style="min-height:88px">${esc((item.bullets || []).join('\n'))}</textarea></div>
+          </div>`).join('');
+      }
+
+      function buildPortAdmin() {
+        if (!portList) return;
+        const projects = getProjectsFromDom();
+        portList.innerHTML = projects.map((item, i) => `
+          <div class="adm-entry" data-port-card="${i}">
+            <div class="adm-entry-head">
+              <span class="adm-entry-num">Project ${String(i + 1).padStart(2, '0')}</span>
+              <button class="adm-del" data-action="remove-port" data-i="${i}" title="Remove">x</button>
+            </div>
+            <div class="adm-row">
+              <div class="adm-group"><label class="adm-label">Title</label><input class="adm-input" data-port="${i}" data-field="h3" value="${esc(item.h3)}"></div>
+              <div class="adm-group"><label class="adm-label">Year</label><input class="adm-input" data-port="${i}" data-field="year" value="${esc(item.year)}"></div>
+            </div>
+            <div class="adm-group"><label class="adm-label">Category</label><input class="adm-input" data-port="${i}" data-field="cat" value="${esc(item.cat)}"></div>
+            <div class="adm-group"><label class="adm-label">Slug</label><input class="adm-input" data-port="${i}" data-field="slug" value="${esc(item.slug)}"></div>
+            <div class="adm-group"><label class="adm-label">Cover URL or uploaded image</label><input class="adm-input" data-port="${i}" data-field="cover" value="${esc(item.cover)}" placeholder="https://... or upload below"></div>
+            <div class="adm-group"><input class="adm-input" data-port-upload="${i}" type="file" accept="image/png,image/jpeg,image/webp,image/avif"></div>
+            <div class="adm-group"><label class="adm-label">Description</label><textarea class="adm-textarea" data-port="${i}" data-field="desc" style="min-height:68px">${esc(item.desc)}</textarea></div>
+            <div class="adm-group"><label class="adm-label">Project page details</label><textarea class="adm-textarea" data-port="${i}" data-field="details" style="min-height:96px">${esc(item.details || item.desc)}</textarea></div>
+            <div class="adm-group"><label class="adm-label">Tags</label><input class="adm-input" data-port="${i}" data-field="tags" value="${esc((item.tags || []).join(', '))}"></div>
+          </div>`).join('');
+      }
+
+      function updateExperienceField(input) {
+        const row = document.querySelectorAll('#experience .exp-row')[Number(input.dataset.exp)];
+        if (!row) return;
+        const field = input.dataset.field;
+        if (field === 'yr') row.querySelector('.yr').textContent = input.value;
+        if (field === 'co') row.querySelector('.co').textContent = input.value;
+        if (field === 'ro') row.querySelector('.ro').textContent = input.value;
+        if (field === 'bullets') {
+          row.querySelector('ul').innerHTML = input.value.split('\n').map(s => s.trim()).filter(Boolean).map(bulletHtml).join('');
+        }
+      }
+
+      function updateProjectField(input) {
+        const art = document.querySelectorAll('#portfolio .port')[Number(input.dataset.port)];
+        if (!art) return;
+        const field = input.dataset.field;
+        if (field === 'cat') art.querySelector('.cat').textContent = input.value;
+        if (field === 'h3') {
+          art.querySelector('h3').textContent = input.value;
+          if (!art.dataset.slug) art.dataset.slug = slugify(input.value);
+        }
+        if (field === 'year') art.querySelector('.year').textContent = input.value;
+        if (field === 'slug') art.dataset.slug = slugify(input.value);
+        if (field === 'desc') art.querySelector('p').textContent = input.value;
+        if (field === 'details') art.dataset.details = input.value;
+        if (field === 'tags') {
+          art.querySelector('.stack').innerHTML = input.value.split(',').map(t => t.trim()).filter(Boolean).map(t => `<span>${esc(t)}</span>`).join('');
+        }
+        if (field === 'cover') setProjectCover(art, input.value);
+      }
+
+      function setProjectCover(art, cover) {
+        art.dataset.cover = cover || '';
+        const preview = art.querySelector('.preview');
+        preview.classList.toggle('has-cover', Boolean(cover));
+        preview.style.backgroundImage = cover ? `url("${cover}")` : '';
+      }
+
+      function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function publishData() {
+        if (!ensureLogin()) return;
+        const data = collectAllData();
+        localStorage.setItem(DATA_KEY, JSON.stringify(data));
+        saveBtn.textContent = 'Publishing...';
+        saveBtn.disabled = true;
+        try {
+          const res = await fetch('/api/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: getPassword(), data })
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(json.error || `Server error ${res.status}`);
+          localStorage.removeItem(DATA_KEY);
+          latestData = data;
+          saveBtn.textContent = 'Published';
+        } catch (e) {
+          saveBtn.textContent = 'Saved draft only';
+          console.warn('Publish failed:', e);
+        }
+        setTimeout(() => { saveBtn.textContent = 'Publish'; saveBtn.disabled = false; }, 2600);
+      }
+
+      async function submitBrief(form) {
+        const fields = form.querySelectorAll('input, select, textarea');
+        const selected = [...form.querySelectorAll('.chip.on')].map(chip => chip.textContent.trim());
+        const payload = {
+          createdAt: new Date().toISOString(),
+          name: fields[0]?.value || '',
+          company: fields[1]?.value || '',
+          email: fields[2]?.value || '',
+          engagement: fields[3]?.value || '',
+          message: fields[4]?.value || '',
+          interestedIn: selected
+        };
+        const btn = form.querySelector('button[type=submit]');
+        if (btn) btn.innerHTML = "Sending... <span class='arr'>→</span>";
+        try {
+          const res = await fetch('/api/briefs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) throw new Error('Brief API failed');
+          form.reset();
+          if (btn) btn.innerHTML = "Thanks — I will reply soon. <span class='arr'>✓</span>";
+        } catch (e) {
+          if (btn) btn.innerHTML = "Could not send. Email me instead. <span class='arr'>!</span>";
+        }
+      }
+
+      async function loadBriefs() {
+        const list = document.getElementById('adm-brief-list');
+        if (!list || !isAuthed()) return;
+        list.innerHTML = '<small>Loading briefs...</small>';
+        try {
+          const res = await fetch('/api/briefs', {
+            headers: { 'x-admin-password': getPassword() }
+          });
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error || 'Could not load briefs');
+          const briefs = json.briefs || [];
+          list.innerHTML = briefs.length ? briefs.slice().reverse().map(brief => `
+            <div class="adm-entry">
+              <div class="adm-entry-head"><span class="adm-entry-num">${esc(new Date(brief.createdAt).toLocaleString())}</span></div>
+              <div><b>${esc(brief.name || 'Unknown')}</b> ${esc(brief.company ? '· ' + brief.company : '')}</div>
+              <div style="color:rgba(255,255,255,.55);margin:4px 0 8px">${esc(brief.email || '')} · ${esc(brief.engagement || '')}</div>
+              <p style="margin:0 0 8px;color:rgba(255,255,255,.75);line-height:1.6">${esc(brief.message || '')}</p>
+              <small>${esc((brief.interestedIn || []).join(', '))}</small>
+            </div>`).join('') : '<small>No briefs yet.</small>';
+        } catch (e) {
+          list.innerHTML = '<small>Briefs unavailable. Check server configuration.</small>';
+        }
+      }
+
+      function showProjectFromPath() {
+        const match = location.pathname.match(/^\/project\/([^/]+)\/?$/);
+        if (!match) {
+          document.body.classList.remove('project-open');
+          return;
+        }
+        const slug = decodeURIComponent(match[1]);
+        const project = getProjectsFromDom().find(item => item.slug === slug) || getProjectsFromDom()[0];
+        if (!project) return;
+        const tags = project.tags || [];
+        projectPage.innerHTML = `
+          <div class="project-shell">
+            <a class="project-back" href="/#portfolio">← Back to portfolio</a>
+            <div class="project-hero">
+              <div>
+                <span class="eyebrow">${esc(project.cat)} · ${esc(project.year)}</span>
+                <h1>${esc(project.h3)}</h1>
+                <p>${esc(project.desc)}</p>
+                <div class="project-meta">${tags.map(t => `<span>${esc(t)}</span>`).join('')}</div>
+              </div>
+              <div class="project-cover"${project.cover ? ` style="background-image:url('${esc(project.cover)}')"` : ''}></div>
+            </div>
+            <div class="project-body">${esc(project.details || project.desc)}</div>
+          </div>`;
+        document.body.classList.add('project-open');
+      }
+
+      installAdminShell();
+      applyStructuredData(latestData);
+      try {
+        const draft = JSON.parse(localStorage.getItem(DATA_KEY) || '{}');
+        applyStructuredData(draft);
+      } catch (e) {}
+      showProjectFromPath();
+
+      document.querySelectorAll('.adm-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          if (!ensureLogin()) return;
+          switchTab(tab.dataset.tab);
+        }, true);
+      });
+
+      toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        openAdmin();
+      }, true);
+      closeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closeAdmin();
+      }, true);
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'A') {
+          e.preventDefault();
+          openAdmin();
+        }
+      }, true);
+
+      document.getElementById('adm-exp-add').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const section = document.querySelector('#experience > .hgrid > div:last-child');
+        const row = document.createElement('div');
+        row.className = 'exp-row reveal in';
+        row.innerHTML = '<div class="yr">20XX</div><div><div class="co">Company</div><div class="ro">Role</div></div><ul><li><b>Achievement.</b> Description of what you did.</li></ul>';
+        section.appendChild(row);
+        buildExpAdmin();
+      }, true);
+
+      document.getElementById('adm-port-add').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const projects = getProjectsFromDom();
+        projects.push({ slug: `project-${projects.length + 1}`, cat: 'Category · Type', h3: 'Project Title', year: '2026', desc: 'Brief description of the project and its impact.', details: 'Add the full project story here.', cover: '', tags: ['Tag'] });
+        renderProjects(projects);
+        buildPortAdmin();
+      }, true);
+
+      expList.addEventListener('input', (e) => {
+        if (e.target.matches('[data-exp]')) updateExperienceField(e.target);
+      });
+      expList.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="remove-exp"]');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (!confirm('Remove this experience entry from the page?')) return;
+        document.querySelectorAll('#experience .exp-row')[Number(btn.dataset.i)]?.remove();
+        buildExpAdmin();
+      }, true);
+
+      portList.addEventListener('input', (e) => {
+        if (e.target.matches('[data-port]')) updateProjectField(e.target);
+      });
+      portList.addEventListener('change', async (e) => {
+        const input = e.target.closest('[data-port-upload]');
+        if (!input || !input.files?.[0]) return;
+        const dataUrl = await fileToDataUrl(input.files[0]);
+        const textInput = portList.querySelector(`[data-port="${input.dataset.portUpload}"][data-field="cover"]`);
+        if (textInput) {
+          textInput.value = dataUrl;
+          updateProjectField(textInput);
+        }
+      });
+      portList.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action="remove-port"]');
+        if (!btn) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (!confirm('Remove this project from the portfolio?')) return;
+        document.querySelectorAll('#portfolio .port')[Number(btn.dataset.i)]?.remove();
+        buildPortAdmin();
+      }, true);
+
+      saveBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        publishData();
+      }, true);
+      resetBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (!confirm('Reset draft changes and reload?')) return;
+        localStorage.removeItem(DATA_KEY);
+        localStorage.removeItem('portfolio_admin_v1');
+        location.href = '/';
+      }, true);
+
+      document.getElementById('briefForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        submitBrief(e.currentTarget);
+      }, true);
+
+      document.addEventListener('click', (e) => {
+        const card = e.target.closest('.port');
+        if (!card || e.target.closest('#admin-panel')) return;
+        const slug = card.dataset.slug || slugify(card.querySelector('h3')?.textContent || 'project');
+        history.pushState({}, '', '/project/' + encodeURIComponent(slug));
+        showProjectFromPath();
+      });
+      document.addEventListener('click', (e) => {
+        const back = e.target.closest('.project-back');
+        if (!back) return;
+        e.preventDefault();
+        history.pushState({}, '', '/#portfolio');
+        document.body.classList.remove('project-open');
+        setTimeout(() => document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth' }), 30);
+      });
+      window.addEventListener('popstate', showProjectFromPath);
+
+      if (location.pathname === '/admin') showLogin();
     })();
   </script>
 
