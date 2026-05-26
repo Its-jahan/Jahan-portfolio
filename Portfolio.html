@@ -1996,9 +1996,11 @@
       transition: opacity .2s ease, transform .2s ease;
       box-shadow: 0 4px 16px -4px rgba(26,25,22,0.40);
     }
-    #admin-toggle:hover { opacity: 1 !important; transform: scale(1.1) }
-    body:hover #admin-toggle { opacity: 0.3 }
-    #admin-toggle.open { opacity: 1; background: #E2615E }
+    /* revealed only after auth */
+    #admin-toggle.unlocked { pointer-events: auto; }
+    #admin-toggle.unlocked:hover { opacity: 1; transform: scale(1.1) }
+    body:hover #admin-toggle.unlocked { opacity: 0.3 }
+    #admin-toggle.open { opacity: 1 !important; background: #E2615E }
 
     #admin-panel {
       position: fixed;
@@ -2155,6 +2157,159 @@
     }
     .adm-add:hover { border-color: rgba(255,255,255,.3); color: rgba(255,255,255,.6) }
     .adm-entry.deleted { display: none }
+
+    /* ── Briefs tab dot ────────────────────────── */
+    .brief-dot {
+      display: none;
+      width: 6px; height: 6px;
+      border-radius: 50%; background: #E2615E;
+      margin-left: 4px; vertical-align: middle;
+    }
+
+    /* ── Portfolio cover image ──────────────────── */
+    .port { cursor: pointer }
+    .port-cover-img {
+      width: 100%; height: 140px;
+      object-fit: cover; border-radius: 8px;
+      margin-bottom: 10px; display: block;
+    }
+
+    /* ── PROJECT OVERLAY ─────────────────────────
+       Full-screen showcase for each portfolio item */
+    #proj-overlay {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      z-index: 20000;
+      overflow-y: auto;
+      opacity: 0; pointer-events: none;
+      transform: translateY(20px);
+      transition: opacity .35s cubic-bezier(.2,.7,.2,1),
+                  transform .35s cubic-bezier(.2,.7,.2,1);
+    }
+    #proj-overlay.open {
+      opacity: 1; pointer-events: auto;
+      transform: translateY(0);
+    }
+    .proj-back {
+      position: sticky; top: 0; z-index: 1;
+      padding: 16px var(--pad-x);
+      background: rgba(237,234,227,.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--rule);
+    }
+    #proj-close {
+      font: 500 12px var(--sf);
+      color: var(--mute); letter-spacing: -0.01em;
+      cursor: pointer; padding: 6px 0;
+      transition: color .15s;
+    }
+    #proj-close:hover { color: var(--ink); }
+    .proj-cover-wrap {
+      width: 100%;
+      max-height: 60vh;
+      overflow: hidden;
+      background: var(--bg-2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .proj-cover-wrap img {
+      width: 100%; max-height: 60vh;
+      object-fit: cover; display: block;
+    }
+    .proj-cover-empty {
+      font: 400 11px var(--mono);
+      color: var(--mute-2);
+      letter-spacing: .08em; text-transform: uppercase;
+      padding: 80px 0;
+    }
+    .proj-content {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 56px var(--pad-x) 100px;
+    }
+    .proj-eyebrow {
+      display: flex; gap: 16px;
+      font: 400 11px var(--mono);
+      letter-spacing: .10em; text-transform: uppercase;
+      color: var(--mute); margin-bottom: 20px;
+    }
+    #proj-title {
+      font-family: var(--serif);
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 400; line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--ink); margin: 0 0 24px;
+    }
+    .proj-desc {
+      font-size: 16px; line-height: 1.65;
+      color: var(--ink-2); margin: 0 0 32px;
+    }
+    .proj-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .proj-tag {
+      padding: 5px 12px; border-radius: 999px;
+      border: 1px solid var(--rule-strong);
+      font-size: 11px; color: var(--mute);
+      background: var(--surface);
+    }
+
+    /* ── AUTH OVERLAY ────────────────────────────
+       Password gate for admin mode               */
+    #auth-overlay {
+      position: fixed; inset: 0;
+      background: rgba(26,25,22,.60);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 30000;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s ease;
+    }
+    #auth-overlay.open { opacity: 1; pointer-events: auto; }
+    .auth-box {
+      background: #18171A;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      padding: 32px 28px 24px;
+      width: 320px;
+      box-shadow: 0 32px 80px rgba(0,0,0,.5);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .auth-box h5 {
+      margin: 0; font-size: 16px; font-weight: 600;
+      color: #fff; letter-spacing: -0.02em;
+    }
+    .auth-box small {
+      color: rgba(255,255,255,.4); font-size: 12px;
+      display: block; margin-bottom: 4px;
+    }
+    #auth-input {
+      width: 100%; padding: 10px 12px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px; color: #fff;
+      font: 400 14px var(--sf); outline: none;
+      transition: border-color .15s;
+    }
+    #auth-input:focus { border-color: rgba(255,255,255,.3); }
+    #auth-error {
+      font-size: 11px; color: #E2615E;
+      min-height: 16px;
+    }
+    #auth-submit {
+      width: 100%; padding: 10px;
+      background: linear-gradient(135deg, #6B6FE8, #F06AB0);
+      border: 0; border-radius: 10px;
+      color: #fff; font: 500 13px var(--sf);
+      cursor: pointer; margin-top: 4px;
+      transition: opacity .15s;
+    }
+    #auth-submit:hover { opacity: .85; }
+    @keyframes auth-shake {
+      0%,100% { transform: translateX(0) }
+      20%,60%  { transform: translateX(-6px) }
+      40%,80%  { transform: translateX(6px) }
+    }
+    #auth-input.shake { animation: auth-shake .4s ease; }
 
   </style>
 </head>
@@ -2569,7 +2724,7 @@
         </div>
         <div>
 
-          <article class="port reveal">
+          <article class="port reveal" data-cover="">
             <div>
               <div class="head">
                 <div>
@@ -2590,7 +2745,7 @@
             </div>
           </article>
 
-          <article class="port reveal" data-delay="1">
+          <article class="port reveal" data-delay="1" data-cover="">
             <div>
               <div class="head">
                 <div>
@@ -2609,7 +2764,7 @@
             </div>
           </article>
 
-          <article class="port reveal" data-delay="2">
+          <article class="port reveal" data-delay="2" data-cover="">
             <div>
               <div class="head">
                 <div>
@@ -2628,7 +2783,7 @@
             </div>
           </article>
 
-          <article class="port reveal" data-delay="3">
+          <article class="port reveal" data-delay="3" data-cover="">
             <div>
               <div class="head">
                 <div>
@@ -2647,7 +2802,7 @@
             </div>
           </article>
 
-          <article class="port reveal" data-delay="4">
+          <article class="port reveal" data-delay="4" data-cover="">
             <div>
               <div class="head">
                 <div>
@@ -2803,9 +2958,43 @@
   <div class="project-page" id="project-page" aria-live="polite"></div>
 
   <!-- ════════════════════════════════════
+       PROJECT DETAIL OVERLAY
+  ════════════════════════════════════ -->
+  <div id="proj-overlay" role="dialog" aria-modal="true" aria-label="Project detail">
+    <div class="proj-back">
+      <button id="proj-close">← Back to work</button>
+    </div>
+    <div id="proj-cover-wrap" class="proj-cover-wrap">
+      <span class="proj-cover-empty">No cover image yet</span>
+    </div>
+    <div class="proj-content">
+      <div class="proj-eyebrow">
+        <span id="proj-cat"></span>
+        <span id="proj-year"></span>
+      </div>
+      <h2 id="proj-title"></h2>
+      <p class="proj-desc" id="proj-desc"></p>
+      <div class="proj-tags" id="proj-tags"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       AUTH OVERLAY
+  ════════════════════════════════════ -->
+  <div id="auth-overlay" role="dialog" aria-modal="true" aria-label="Admin authentication">
+    <div class="auth-box">
+      <h5>Admin access</h5>
+      <small>Enter your password to continue</small>
+      <input id="auth-input" type="password" placeholder="••••••••" autocomplete="current-password">
+      <div id="auth-error"></div>
+      <button id="auth-submit">Unlock</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
        ADMIN PANEL
   ════════════════════════════════════ -->
-  <button id="admin-toggle" title="Content Admin (⌘⇧A)" aria-label="Open admin panel">⚙</button>
+  <button id="admin-toggle" tabindex="-1" title="⚙" aria-label="Settings" style="pointer-events:none">⚙</button>
 
   <aside id="admin-panel" aria-label="Content admin panel" role="complementary">
     <div class="adm-head">
@@ -2825,6 +3014,7 @@
     <div class="adm-tabs" style="padding-top:0;margin-top:-4px">
       <button class="adm-tab" data-tab="contact">Contact</button>
       <button class="adm-tab" data-tab="marquee">Marquee</button>
+      <button class="adm-tab" data-tab="briefs">Briefs <span class="brief-dot" id="brief-dot"></span></button>
     </div>
 
     <div class="adm-body">
@@ -2994,6 +3184,14 @@
         <button class="adm-add" id="adm-port-add">+ Add project</button>
       </div>
 
+      <!-- BRIEFS TAB -->
+      <div class="adm-section" id="adm-briefs">
+        <div class="adm-badge"><i></i> Inbox</div>
+        <div id="adm-briefs-list">
+          <p style="color:rgba(255,255,255,.35);font-size:11px">No briefs yet.</p>
+        </div>
+      </div>
+
     </div><!-- /adm-body -->
 
     <div class="adm-foot">
@@ -3112,11 +3310,31 @@
     });
 
     /* ═══════════════════════════════════════════════════
-       8. BRIEF FORM
+       8. BRIEF FORM — posts to save server for admin inbox
     ═══════════════════════════════════════════════════ */
-    document.getElementById('briefForm')?.addEventListener('submit', (e) => {
+    document.getElementById('briefForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const btn = e.currentTarget.querySelector('button[type=submit]');
+      const form = e.currentTarget;
+      const btn  = form.querySelector('button[type=submit]');
+      const textInputs = form.querySelectorAll('input[type=text]');
+      const brief = {
+        ts:         new Date().toISOString(),
+        name:       textInputs[0]?.value || '',
+        company:    textInputs[1]?.value || '',
+        email:      form.querySelector('input[type=email]')?.value || '',
+        engagement: form.querySelector('select')?.value || '',
+        message:    form.querySelector('textarea')?.value || '',
+        interests:  [...form.querySelectorAll('.chip.on')].map(c => c.textContent.trim()),
+      };
+      try {
+        await fetch('http://localhost:4322/submit-brief', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(brief),
+        });
+        const dot = document.getElementById('brief-dot');
+        if (dot) dot.style.display = 'inline-block';
+      } catch(_) { /* server offline — still confirm to visitor */ }
       if (btn) btn.innerHTML = "Thanks — I will reply soon. <span class='arr'>✓</span>";
     });
 
@@ -3147,191 +3365,227 @@
     })();
 
     /* ═══════════════════════════════════════════════════
-       10. ADMIN PANEL
+       10. ADMIN PANEL (with auth, delete persistence,
+           cover images, briefs inbox)
     ═══════════════════════════════════════════════════ */
     (function () {
-      const panel   = document.getElementById('admin-panel');
-      const toggle  = document.getElementById('admin-toggle');
-      const closeBtn= document.getElementById('adm-close');
 
-      // ── open / close ──────────────────────────────
-      function openPanel() { panel.classList.add('open'); toggle.classList.add('open'); populateFields(); }
+      /* ── AUTH SYSTEM ──────────────────────────────────
+         Default password: jahan2026
+         To change: echo -n "newpassword" | sha256sum
+      ────────────────────────────────────────────────── */
+      const PASS_HASH    = '991815b11c609999e6c921b1c50b7373001ebd77012ccf6fa69986b9323b120c';
+      const SESSION_KEY  = 'portfolio_admin_session_v1';
+      const LOCK_KEY     = 'portfolio_admin_lock_v1';
+      const SESSION_TTL  = 2 * 60 * 60 * 1000;
+      const MAX_ATTEMPTS = 3;
+      let authAttempts   = 0;
+
+      async function sha256(msg) {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+        return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+      }
+      function isSessionActive() {
+        try { const s=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null'); return s&&s.exp>Date.now(); }
+        catch(_){ return false; }
+      }
+      function startSession() {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify({ exp: Date.now()+SESSION_TTL }));
+        toggle.classList.add('unlocked');
+        toggle.style.pointerEvents = '';
+      }
+      function isLockedOut() {
+        try { const l=JSON.parse(sessionStorage.getItem(LOCK_KEY)||'null'); return l&&l.until>Date.now(); }
+        catch(_){ return false; }
+      }
+
+      const authOverlay = document.getElementById('auth-overlay');
+      const authInput   = document.getElementById('auth-input');
+      const authError   = document.getElementById('auth-error');
+      const authSubmit  = document.getElementById('auth-submit');
+
+      function showAuth(onSuccess) {
+        if (isSessionActive()) { onSuccess(); return; }
+        if (authInput) authInput.value = '';
+        if (authError) authError.textContent = '';
+        if (authOverlay) authOverlay.classList.add('open');
+        if (authInput) authInput.focus();
+
+        const handleSubmit = async () => {
+          if (!authInput||!authError) return;
+          if (isLockedOut()) { authError.textContent='Too many attempts. Try again later.'; return; }
+          const hash = await sha256(authInput.value);
+          if (hash === PASS_HASH) {
+            authAttempts = 0;
+            startSession();
+            if (authOverlay) authOverlay.classList.remove('open');
+            onSuccess();
+          } else {
+            authAttempts++;
+            if (authAttempts >= MAX_ATTEMPTS) {
+              sessionStorage.setItem(LOCK_KEY, JSON.stringify({ until: Date.now()+15*60*1000 }));
+              authError.textContent = 'Too many attempts. Locked for 15 minutes.';
+              authInput.disabled = true; authSubmit.disabled = true;
+              setTimeout(() => {
+                sessionStorage.removeItem(LOCK_KEY);
+                authInput.disabled=false; authSubmit.disabled=false; authAttempts=0;
+              }, 15*60*1000);
+            } else {
+              const rem = MAX_ATTEMPTS - authAttempts;
+              authError.textContent = `Incorrect password. ${rem} attempt${rem===1?'':'s'} remaining.`;
+              authInput.classList.add('shake');
+              setTimeout(() => authInput.classList.remove('shake'), 450);
+            }
+          }
+        };
+        if (authSubmit) authSubmit.onclick = handleSubmit;
+        if (authInput)  authInput.onkeydown = e => { if(e.key==='Enter') handleSubmit(); };
+      }
+
+      authOverlay?.addEventListener('click', e => {
+        if (e.target === authOverlay) authOverlay.classList.remove('open');
+      });
+
+      /* ── PANEL REFS ───────────────────────────────── */
+      const panel    = document.getElementById('admin-panel');
+      const toggle   = document.getElementById('admin-toggle');
+      const closeBtn = document.getElementById('adm-close');
+
+      if (isSessionActive()) { toggle.classList.add('unlocked'); toggle.style.pointerEvents=''; }
+
+      /* ── OPEN / CLOSE ─────────────────────────────── */
+      function openPanel()  { panel.classList.add('open');    toggle.classList.add('open');    populateFields(); }
       function closePanel() { panel.classList.remove('open'); toggle.classList.remove('open'); }
-      toggle.addEventListener('click', () => panel.classList.contains('open') ? closePanel() : openPanel());
+
+      toggle.addEventListener('click', () => {
+        if (!isSessionActive()) return;
+        panel.classList.contains('open') ? closePanel() : openPanel();
+      });
       closeBtn.addEventListener('click', closePanel);
 
-      // keyboard shortcut ⌘⇧A / Ctrl⇧A
       document.addEventListener('keydown', (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'A') {
+        if ((e.metaKey||e.ctrlKey) && e.shiftKey && e.key==='A') {
           e.preventDefault();
-          panel.classList.contains('open') ? closePanel() : openPanel();
+          if (panel.classList.contains('open')) { closePanel(); return; }
+          showAuth(() => openPanel());
         }
       });
 
-      // ── tab switching ─────────────────────────────
+      /* ── TAB SWITCHING ────────────────────────────── */
       document.querySelectorAll('.adm-tab').forEach(tab => {
         tab.addEventListener('click', () => {
           document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('active'));
           document.querySelectorAll('.adm-section').forEach(s => s.classList.remove('active'));
           tab.classList.add('active');
-          document.getElementById('adm-' + tab.dataset.tab).classList.add('active');
+          const sec=document.getElementById('adm-'+tab.dataset.tab);
+          if(sec) sec.classList.add('active');
+          if(tab.dataset.tab==='exp')    buildExpAdmin();
+          if(tab.dataset.tab==='port')   buildPortAdmin();
+          if(tab.dataset.tab==='briefs') loadBriefs();
         });
       });
 
-      // ── helpers to read DOM values ────────────────
-      function getEl(sel) { return document.querySelector(sel); }
-      function getText(sel) { return (getEl(sel) || {}).textContent?.trim() || ''; }
-      function getInner(sel) { return (getEl(sel) || {}).innerHTML?.trim() || ''; }
+      /* ── HELPERS ──────────────────────────────────── */
+      function getEl(sel)  { return document.querySelector(sel); }
+      function getText(sel){ return (getEl(sel)||{}).textContent?.trim()||''; }
 
-      // ── populate fields from live DOM ─────────────
+      /* ── POPULATE FIELDS ──────────────────────────── */
       function populateFields() {
-        // Hero
         const badge = getEl('.badge');
-        const badgeText = badge ? badge.textContent.replace(/^\s*/, '').trim() : '';
-        setVal('adm-badge-text', badgeText);
+        setVal('adm-badge-text', badge ? badge.textContent.trim() : '');
         setVal('adm-hero-name', getText('.name'));
-        const words = [...document.querySelectorAll('#heroSentence .word .mute')];
-        // city = Yerevan word (before comma), country = AM.
-        const locWords = [...document.querySelectorAll('#heroSentence .word')];
-        const cityWord = locWords.find(w => w.textContent.includes('Yerevan'));
+        const locWords    = [...document.querySelectorAll('#heroSentence .word')];
+        const cityWord    = locWords.find(w => w.textContent.includes('Yerevan'));
         const countryWord = locWords.find(w => w.querySelector('.mute') && w.querySelector('.mute').textContent.includes('AM'));
-        setVal('adm-hero-city', cityWord ? cityWord.textContent.trim().replace(/,/g,'') : 'Yerevan');
-        setVal('adm-hero-country', countryWord ? countryWord.querySelector('.mute').textContent.trim() : 'AM.');
-
+        setVal('adm-hero-city',    cityWord    ? cityWord.textContent.trim().replace(/,/g,'').trim() : 'Yerevan');
+        setVal('adm-hero-country', countryWord ? countryWord.querySelector('.mute').textContent.trim()   : 'AM.');
         const bioParas = document.querySelectorAll('.hero-bio p');
-        setVal('adm-bio-1', bioParas[0]?.textContent?.trim() || '');
-        setVal('adm-bio-2', bioParas[1]?.textContent?.trim() || '');
-
+        setVal('adm-bio-1', bioParas[0]?.textContent?.trim()||'');
+        setVal('adm-bio-2', bioParas[1]?.textContent?.trim()||'');
         const socialLinks = [...document.querySelectorAll('.hero-social a')];
         setVal('adm-social', socialLinks.map(a => {
-          const label = a.textContent.replace(/↗/g,'').trim();
-          const href = a.href || '#';
-          return label + '|' + href;
+          const label=a.textContent.replace(/↗/g,'').trim();
+          return label+'|'+(a.getAttribute('href')||'#');
         }).join('\n'));
-
-        // About
         setVal('adm-about-tag', getText('.about .anchor small'));
-
-        const stats = document.querySelectorAll('.stat');
-        const statData = [...stats].map(s => {
-          const n = s.querySelector('.n');
-          const sup = n?.querySelector('sup');
-          const num = n ? n.textContent.replace(sup?.textContent||'','').trim() : '';
-          return { num, suffix: sup?.textContent||'', label: s.querySelector('.l')?.textContent?.trim()||'' };
+        const statData=[...document.querySelectorAll('.stat')].map(s=>{
+          const n=s.querySelector('.n'), sup=n?.querySelector('sup');
+          return { num: n?n.textContent.replace(sup?.textContent||'','').trim():'',
+                   suffix: sup?.textContent||'', label: s.querySelector('.l')?.textContent?.trim()||''};
         });
-        ['s1','s2','s3','s4'].forEach((k,i) => {
-          const d = statData[i] || {};
-          setVal(`adm-${k}n`, d.num||''); setVal(`adm-${k}s`, d.suffix||''); setVal(`adm-${k}l`, d.label||'');
+        ['s1','s2','s3','s4'].forEach((k,i)=>{
+          const d=statData[i]||{};
+          setVal(`adm-${k}n`,d.num||''); setVal(`adm-${k}s`,d.suffix||''); setVal(`adm-${k}l`,d.label||'');
         });
-
-        // Contact
-        const emailEl = getEl('[href^="mailto:"]');
-        setVal('adm-email', emailEl ? emailEl.textContent.replace('Email','').replace(/↗/g,'').trim() : '');
-        const phoneEl = getEl('[href^="tel:"]');
-        setVal('adm-phone', phoneEl ? phoneEl.textContent.replace('Phone','').replace(/↗/g,'').trim() : '');
-        const locEl = document.querySelectorAll('.contact-head .meta a')[2];
-        setVal('adm-location', locEl ? locEl.textContent.replace('Location','').trim() : '');
-        const heading = getEl('.contact-head h2');
-        setVal('adm-contact-heading', heading?.textContent?.trim()||'');
-
-        // Marquee — dedupe (track has double for infinite)
-        const marqueeSpans = [...document.querySelectorAll('.marquee-track span:not(.star)')];
-        const half = Math.floor(marqueeSpans.length / 2);
-        setVal('adm-marquee-list', marqueeSpans.slice(0, half).map(s => s.textContent).join('\n'));
+        const emailA=getEl('.contact-head [href^="mailto:"]');
+        setVal('adm-email', emailA?emailA.textContent.replace('Email','').replace(/↗/g,'').trim():'');
+        const phoneA=getEl('[href^="tel:"]');
+        setVal('adm-phone', phoneA?phoneA.textContent.replace('Phone','').replace(/↗/g,'').trim():'');
+        const locA=document.querySelectorAll('.contact-head .meta a')[2];
+        setVal('adm-location', locA?locA.textContent.replace('Location','').trim():'');
+        setVal('adm-contact-heading', getEl('.contact-head h2')?.textContent?.trim()||'');
+        const mSpans=[...document.querySelectorAll('.marquee-track span:not(.star)')];
+        setVal('adm-marquee-list', mSpans.slice(0,Math.floor(mSpans.length/2)).map(s=>s.textContent).join('\n'));
       }
 
-      function setVal(id, val) {
-        const el = document.getElementById(id);
-        if (el) el.value = val;
-      }
+      function setVal(id,val){ const el=document.getElementById(id); if(el) el.value=val; }
 
-      // ── live-update DOM as user types ─────────────
-      function liveWire(id, applyFn) {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('input', () => applyFn(el.value));
-      }
-
-      liveWire('adm-badge-text', v => {
-        const b = getEl('.badge');
-        if (b) { b.innerHTML = `<i></i> ${v}`; }
+      /* ── LIVE WIRING ──────────────────────────────── */
+      function liveWire(id,fn){ const el=document.getElementById(id); if(el) el.addEventListener('input',()=>fn(el.value)); }
+      liveWire('adm-badge-text', v=>{ const b=getEl('.badge'); if(b) b.innerHTML=`<i></i> ${v}`; });
+      liveWire('adm-hero-name',  v=>{ const n=getEl('.name');  if(n) n.textContent=v; });
+      liveWire('adm-hero-city',  v=>{
+        const w=[...document.querySelectorAll('#heroSentence .word')].find(x=>x.textContent.includes('Yerevan'));
+        if(w){ const comma=w.textContent.includes(',') ? ',' : ''; w.textContent=v+comma; }
       });
-      liveWire('adm-hero-name', v => {
-        const n = getEl('.name');
-        if (n) n.textContent = v;
+      liveWire('adm-bio-1', v=>{ const p=document.querySelectorAll('.hero-bio p')[0]; if(p) p.textContent=v; });
+      liveWire('adm-bio-2', v=>{ const p=document.querySelectorAll('.hero-bio p')[1]; if(p) p.innerHTML=v; });
+      ['s1','s2','s3','s4'].forEach((k,i)=>{
+        ['n','s','l'].forEach(f=>liveWire(`adm-${k}${f}`,()=>{
+          const stat=document.querySelectorAll('.stat')[i]; if(!stat) return;
+          const nEl=stat.querySelector('.n'), lEl=stat.querySelector('.l');
+          const num=document.getElementById(`adm-${k}n`)?.value||'';
+          const suf=document.getElementById(`adm-${k}s`)?.value||'';
+          const lbl=document.getElementById(`adm-${k}l`)?.value||'';
+          if(nEl) nEl.innerHTML=num+(suf?`<sup>${suf}</sup>`:'');
+          if(lEl) lEl.textContent=lbl;
+        }));
       });
-      liveWire('adm-hero-city', v => {
-        const words = [...document.querySelectorAll('#heroSentence .word')];
-        const w = words.find(w => w.textContent.includes('Yerevan') || w.textContent.includes(document.getElementById('adm-hero-city')?.value));
-        if (w && !w.querySelector('.mute') && !w.querySelector('span')) w.textContent = v + ',';
-        else if (w) { const comma = w.textContent.includes(',') ? ',' : ''; w.textContent = v + comma; }
-      });
-      liveWire('adm-bio-1', v => { const p = document.querySelectorAll('.hero-bio p')[0]; if (p) p.textContent = v; });
-      liveWire('adm-bio-2', v => { const p = document.querySelectorAll('.hero-bio p')[1]; if (p) p.innerHTML = v; });
-
-      // Stats live
-      ['s1','s2','s3','s4'].forEach((k, i) => {
-        ['n','s','l'].forEach(f => {
-          liveWire(`adm-${k}${f}`, () => {
-            const stat = document.querySelectorAll('.stat')[i];
-            if (!stat) return;
-            const nEl = stat.querySelector('.n');
-            const lEl = stat.querySelector('.l');
-            const num = document.getElementById(`adm-${k}n`)?.value || '';
-            const suf = document.getElementById(`adm-${k}s`)?.value || '';
-            const lbl = document.getElementById(`adm-${k}l`)?.value || '';
-            if (nEl) nEl.innerHTML = num + (suf ? `<sup>${suf}</sup>` : '');
-            if (lEl) lEl.textContent = lbl;
-          });
+      liveWire('adm-email', v=>{
+        document.querySelectorAll('[href^="mailto:"]').forEach(a=>{
+          a.href=`mailto:${v}`;
+          if(!a.classList.contains('grad-pill')) a.innerHTML=`<span>Email</span>${v}`;
         });
       });
-
-      // Contact live
-      liveWire('adm-email', v => {
-        document.querySelectorAll('[href^="mailto:"]').forEach(a => {
-          a.href = `mailto:${v}`;
-          if (!a.classList.contains('grad-pill')) a.innerHTML = `<span>Email</span>${v}`;
-        });
+      liveWire('adm-phone', v=>{
+        const a=getEl('[href^="tel:"]');
+        if(a){ a.href=`tel:${v.replace(/\s/g,'')}`; a.innerHTML=`<span>Phone</span>${v}`; }
       });
-      liveWire('adm-phone', v => {
-        const a = getEl('[href^="tel:"]');
-        if (a) { a.href = `tel:${v.replace(/\s/g,'')}`;
-          a.innerHTML = `<span>Phone</span>${v}`; }
+      liveWire('adm-location', v=>{
+        const a=document.querySelectorAll('.contact-head .meta a')[2];
+        if(a) a.innerHTML=`<span>Location</span>${v}`;
       });
-      liveWire('adm-location', v => {
-        const a = document.querySelectorAll('.contact-head .meta a')[2];
-        if (a) a.innerHTML = `<span>Location</span>${v}`;
-      });
-      liveWire('adm-contact-heading', v => {
-        const h = getEl('.contact-head h2'); if (h) h.textContent = v;
+      liveWire('adm-contact-heading', v=>{ const h=getEl('.contact-head h2'); if(h) h.textContent=v; });
+      liveWire('adm-marquee-list', v=>{
+        const names=v.split('\n').map(s=>s.trim()).filter(Boolean); if(!names.length) return;
+        const track=getEl('.marquee-track'); if(!track) return;
+        track.innerHTML=[...names,...names].map(n=>`<span class="star">✦</span><span>${n}</span>`).join('');
       });
 
-      // Marquee live
-      liveWire('adm-marquee-list', v => {
-        const names = v.split('\n').map(s => s.trim()).filter(Boolean);
-        if (!names.length) return;
-        const doubled = [...names, ...names]; // infinite scroll needs duplicate
-        const track = getEl('.marquee-track');
-        if (!track) return;
-        track.innerHTML = doubled.map(n => `<span class="star">✦</span><span>${n}</span>`).join('');
-      });
+      /* ── DELETE TRACKING ──────────────────────────── */
+      const _del = { exp: new Set(), port: new Set() };
 
-      /* ═══════════════════════════════════════════════════
-         EXPERIENCE admin — read/write/add/delete exp-rows
-      ═══════════════════════════════════════════════════ */
+      /* ── EXPERIENCE ADMIN ─────────────────────────── */
       function buildExpAdmin() {
-        const container = document.getElementById('adm-exp-list');
-        container.innerHTML = '';
-        const rows = document.querySelectorAll('.exp-row');
-        rows.forEach((row, i) => {
-          const yr = row.querySelector('.yr')?.textContent.trim() || '';
-          const co = row.querySelector('.co')?.textContent.trim() || '';
-          const ro = row.querySelector('.ro')?.textContent.trim() || '';
-          const bullets = [...row.querySelectorAll('li')].map(li => li.textContent.trim()).join('\n');
-
-          const card = document.createElement('div');
-          card.className = 'adm-entry';
-          card.dataset.index = i;
-          card.innerHTML = `
+        const container=document.getElementById('adm-exp-list'); container.innerHTML='';
+        document.querySelectorAll('.exp-row').forEach((row,i)=>{
+          if(_del.exp.has(i)) return;
+          const yr=row.querySelector('.yr')?.textContent.trim()||'';
+          const co=row.querySelector('.co')?.textContent.trim()||'';
+          const ro=row.querySelector('.ro')?.textContent.trim()||'';
+          const bullets=[...row.querySelectorAll('li')].map(li=>li.textContent.trim()).join('\n');
+          const card=document.createElement('div'); card.className='adm-entry'; card.dataset.index=i;
+          card.innerHTML=`
             <div class="adm-entry-head">
               <span class="adm-entry-num">Experience ${String(i+1).padStart(2,'0')}</span>
               <button class="adm-del" data-action="del-exp" data-i="${i}" title="Remove">✕</button>
@@ -3349,67 +3603,54 @@
             </div>`;
           container.appendChild(card);
         });
-
-        // Live-wire inputs
-        container.querySelectorAll('[data-exp]').forEach(el => {
-          el.addEventListener('input', () => {
-            const i = parseInt(el.dataset.exp);
-            const field = el.dataset.field;
-            const row = document.querySelectorAll('.exp-row')[i];
-            if (!row) return;
-            if (field === 'yr') { const e = row.querySelector('.yr'); if(e) e.textContent = el.value; }
-            if (field === 'co') { const e = row.querySelector('.co'); if(e) e.textContent = el.value; }
-            if (field === 'ro') { const e = row.querySelector('.ro'); if(e) e.textContent = el.value; }
-            if (field === 'bullets') {
-              const ul = row.querySelector('ul');
-              if (ul) ul.innerHTML = el.value.split('\n').filter(Boolean)
-                .map(b => { const [head, ...rest] = b.split('.'); return rest.length ? `<li><b>${head}.</b> ${rest.join('.').trim()}</li>` : `<li>${b}</li>`; }).join('');
+        container.querySelectorAll('[data-exp]').forEach(el=>{
+          el.addEventListener('input',()=>{
+            const i=parseInt(el.dataset.exp), field=el.dataset.field;
+            const row=document.querySelectorAll('.exp-row')[i]; if(!row) return;
+            if(field==='yr'){ const e=row.querySelector('.yr'); if(e) e.textContent=el.value; }
+            if(field==='co'){ const e=row.querySelector('.co'); if(e) e.textContent=el.value; }
+            if(field==='ro'){ const e=row.querySelector('.ro'); if(e) e.textContent=el.value; }
+            if(field==='bullets'){
+              const ul=row.querySelector('ul'); if(!ul) return;
+              ul.innerHTML=el.value.split('\n').filter(Boolean).map(b=>{
+                const [head,...rest]=b.split('.');
+                return rest.length?`<li><b>${head}.</b> ${rest.join('.').trim()}</li>`:`<li>${b}</li>`;
+              }).join('');
             }
           });
         });
-
-        // Delete buttons
-        container.querySelectorAll('[data-action="del-exp"]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const i = parseInt(btn.dataset.i);
-            const row = document.querySelectorAll('.exp-row')[i];
-            if (row && confirm('Remove this experience entry from the page?')) {
-              row.style.display = 'none';
+        container.querySelectorAll('[data-action="del-exp"]').forEach(btn=>{
+          btn.addEventListener('click',()=>{
+            const i=parseInt(btn.dataset.i);
+            const row=document.querySelectorAll('.exp-row')[i];
+            if(row && confirm('Remove this experience entry?')){
+              row.style.display='none'; _del.exp.add(i);
               btn.closest('.adm-entry').classList.add('deleted');
             }
           });
         });
       }
-
-      // Add new experience
-      document.getElementById('adm-exp-add').addEventListener('click', () => {
-        const section = document.querySelector('#experience > .hgrid > div:last-child');
-        if (!section) return;
-        const newRow = document.createElement('div');
-        newRow.className = 'exp-row reveal in';
-        newRow.innerHTML = `<div class="yr">20XX</div><div><div class="co">Company</div><div class="ro">Role</div></div><ul><li><b>Achievement.</b> Description of what you did.</li></ul>`;
-        section.appendChild(newRow);
-        buildExpAdmin();
+      document.getElementById('adm-exp-add').addEventListener('click',()=>{
+        const sec=document.querySelector('#experience > .hgrid > div:last-child'); if(!sec) return;
+        const nr=document.createElement('div'); nr.className='exp-row reveal in';
+        nr.innerHTML='<div class="yr">20XX</div><div><div class="co">Company</div><div class="ro">Role</div></div><ul><li><b>Achievement.</b> Description.</li></ul>';
+        sec.appendChild(nr); buildExpAdmin();
       });
 
-      /* ═══════════════════════════════════════════════════
-         PORTFOLIO admin — read/write/add/delete port articles
-      ═══════════════════════════════════════════════════ */
+      /* ── PORTFOLIO ADMIN ──────────────────────────── */
       function buildPortAdmin() {
-        const container = document.getElementById('adm-port-list');
-        container.innerHTML = '';
-        const ports = document.querySelectorAll('.port');
-        ports.forEach((art, i) => {
-          const cat  = art.querySelector('.cat')?.textContent.trim() || '';
-          const h3   = art.querySelector('h3')?.textContent.trim() || '';
-          const year = art.querySelector('.year')?.textContent.trim() || '';
-          const desc = art.querySelector('p')?.textContent.trim() || '';
-          const tags = [...art.querySelectorAll('.stack span')].map(s => s.textContent.trim()).join(', ');
-          const num  = art.querySelector('.badge-num')?.textContent.trim() || '';
-
-          const card = document.createElement('div');
-          card.className = 'adm-entry';
-          card.innerHTML = `
+        const container=document.getElementById('adm-port-list'); container.innerHTML='';
+        document.querySelectorAll('.port').forEach((art,i)=>{
+          if(_del.port.has(i)) return;
+          const cat  =art.querySelector('.cat')?.textContent.trim()||'';
+          const h3   =art.querySelector('h3')?.textContent.trim()||'';
+          const year =art.querySelector('.year')?.textContent.trim()||'';
+          const desc =art.querySelector('p')?.textContent.trim()||'';
+          const tags =[...art.querySelectorAll('.stack span')].map(s=>s.textContent.trim()).join(', ');
+          const num  =art.querySelector('.badge-num')?.textContent.trim()||'';
+          const cover=art.dataset.cover||'';
+          const card=document.createElement('div'); card.className='adm-entry';
+          card.innerHTML=`
             <div class="adm-entry-head">
               <span class="adm-entry-num">Project ${String(i+1).padStart(2,'0')} ${num}</span>
               <button class="adm-del" data-action="del-port" data-i="${i}" title="Remove">✕</button>
@@ -3426,133 +3667,213 @@
               <textarea class="adm-textarea" data-port="${i}" data-field="desc" style="min-height:68px">${desc}</textarea>
             </div>
             <div class="adm-group"><label class="adm-label">Tags (comma-separated)</label>
-              <input class="adm-input" data-port="${i}" data-field="tags" value="${tags}"></div>`;
+              <input class="adm-input" data-port="${i}" data-field="tags" value="${tags}"></div>
+            <div class="adm-group"><label class="adm-label">Cover image URL</label>
+              <input class="adm-input" data-port="${i}" data-field="cover" placeholder="https://…" value="${cover}"></div>`;
           container.appendChild(card);
         });
-
-        // Live-wire
-        container.querySelectorAll('[data-port]').forEach(el => {
-          el.addEventListener('input', () => {
-            const i = parseInt(el.dataset.port);
-            const field = el.dataset.field;
-            const art = document.querySelectorAll('.port')[i];
-            if (!art) return;
-            if (field === 'cat')  { const e = art.querySelector('.cat');  if(e) e.textContent = el.value; }
-            if (field === 'h3')   { const e = art.querySelector('h3');    if(e) e.textContent = el.value; }
-            if (field === 'year') { const e = art.querySelector('.year'); if(e) e.textContent = el.value; }
-            if (field === 'desc') { const e = art.querySelector('p');     if(e) e.textContent = el.value; }
-            if (field === 'tags') {
-              const stack = art.querySelector('.stack');
-              if (stack) stack.innerHTML = el.value.split(',').map(t => t.trim()).filter(Boolean)
-                .map(t => `<span>${t}</span>`).join('');
+        container.querySelectorAll('[data-port]').forEach(el=>{
+          el.addEventListener('input',()=>{
+            const i=parseInt(el.dataset.port), field=el.dataset.field;
+            const art=document.querySelectorAll('.port')[i]; if(!art) return;
+            if(field==='cat')  { const e=art.querySelector('.cat');  if(e) e.textContent=el.value; }
+            if(field==='h3')   { const e=art.querySelector('h3');    if(e) e.textContent=el.value; }
+            if(field==='year') { const e=art.querySelector('.year'); if(e) e.textContent=el.value; }
+            if(field==='desc') { const e=art.querySelector('p');     if(e) e.textContent=el.value; }
+            if(field==='tags') {
+              const stack=art.querySelector('.stack'); if(!stack) return;
+              stack.innerHTML=el.value.split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span>${t}</span>`).join('');
+            }
+            if(field==='cover') {
+              art.dataset.cover=el.value;
+              const prev=art.querySelector('.preview'); if(!prev) return;
+              const ex=prev.querySelector('.port-cover-img');
+              if(el.value){ if(ex){ex.src=el.value;}else{const img=document.createElement('img');img.className='port-cover-img';img.src=el.value;img.alt='';prev.prepend(img);} }
+              else{ if(ex) ex.remove(); }
             }
           });
         });
-
-        // Delete
-        container.querySelectorAll('[data-action="del-port"]').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const i = parseInt(btn.dataset.i);
-            const art = document.querySelectorAll('.port')[i];
-            if (art && confirm('Remove this project from the portfolio?')) {
-              art.style.display = 'none';
+        container.querySelectorAll('[data-action="del-port"]').forEach(btn=>{
+          btn.addEventListener('click',()=>{
+            const i=parseInt(btn.dataset.i);
+            const art=document.querySelectorAll('.port')[i];
+            if(art && confirm('Remove this project from the portfolio?')){
+              art.style.display='none'; _del.port.add(i);
               btn.closest('.adm-entry').classList.add('deleted');
             }
           });
         });
       }
-
-      // Add new portfolio project
-      document.getElementById('adm-port-add').addEventListener('click', () => {
-        const section = document.querySelector('#portfolio > .hgrid > div:last-child');
-        if (!section) return;
-        const n = document.querySelectorAll('.port').length + 1;
-        const newArt = document.createElement('article');
-        newArt.className = 'port reveal in';
-        newArt.innerHTML = `<div><div class="head"><div><div class="cat">Category · Type</div><h3>Project Title</h3></div><div class="year">2026</div></div><p>Brief description of the project and its impact.</p><div class="stack"><span>Tag</span></div></div><div class="preview"><span class="badge-num">/${String(n).padStart(2,'0')} · CASE STUDY</span><span>// FIG / ${String(n).padStart(2,'0')}</span></div>`;
-        section.appendChild(newArt);
-        buildPortAdmin();
+      document.getElementById('adm-port-add').addEventListener('click',()=>{
+        const sec=document.querySelector('#portfolio > .hgrid > div:last-child'); if(!sec) return;
+        const n=document.querySelectorAll('.port').length+1;
+        const na=document.createElement('article'); na.className='port reveal in'; na.dataset.cover='';
+        na.innerHTML=`<div><div class="head"><div><div class="cat">Category · Type</div><h3>Project Title</h3></div><div class="year">2026</div></div><p>Brief description.</p><div class="stack"><span>Tag</span></div></div><div class="preview"><span class="badge-num">/${String(n).padStart(2,'0')} · CASE STUDY</span><span>// FIG / ${String(n).padStart(2,'0')}</span></div>`;
+        sec.appendChild(na); buildPortAdmin();
       });
 
-      // Trigger experience/portfolio builds when their tabs are opened
-      document.querySelectorAll('.adm-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          if (tab.dataset.tab === 'exp') buildExpAdmin();
-          if (tab.dataset.tab === 'port') buildPortAdmin();
-        });
-      });
+      /* ── BRIEFS INBOX ─────────────────────────────── */
+      function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+      function loadBriefs() {
+        const list=document.getElementById('adm-briefs-list'); if(!list) return;
+        list.innerHTML='<p style="color:rgba(255,255,255,.35);font-size:11px;margin:0">Loading…</p>';
+        fetch('http://localhost:4322/briefs')
+          .then(r=>r.json())
+          .then(briefs=>{
+            if(!briefs.length){ list.innerHTML='<p style="color:rgba(255,255,255,.35);font-size:11px;margin:0">No briefs yet.</p>'; return; }
+            list.innerHTML=briefs.slice().reverse().map(b=>`
+              <div class="adm-entry" style="font-size:11px;line-height:1.5">
+                <div style="color:rgba(255,255,255,.4);font-size:10px;margin-bottom:6px">${new Date(b.ts).toLocaleString()}</div>
+                <div style="font-weight:600;color:#fff;margin-bottom:3px">${escHtml(b.name||'')}${b.company?` · <span style="font-weight:400;color:rgba(255,255,255,.6)">${escHtml(b.company)}</span>`:''}</div>
+                <div style="color:rgba(255,255,255,.5);margin-bottom:${b.engagement?'3':'8'}px">${escHtml(b.email||'')}${b.engagement?` · ${escHtml(b.engagement)}`:''}</div>
+                ${b.message?`<div style="color:rgba(255,255,255,.8);margin-bottom:8px">${escHtml(b.message)}</div>`:''}
+                ${b.interests?.length?`<div style="display:flex;flex-wrap:wrap;gap:4px">${b.interests.map(t=>`<span style="background:rgba(255,255,255,.1);border-radius:4px;padding:2px 7px;font-size:10px">${escHtml(t)}</span>`).join('')}</div>`:''}</div>`).join('');
+            const dot=document.getElementById('brief-dot'); if(dot) dot.style.display='none';
+          })
+          .catch(()=>{ list.innerHTML='<p style="color:rgba(255,255,255,.35);font-size:11px;margin:0">Save server offline.</p>'; });
+      }
 
-      // ── collect current admin field values ────────
+      /* ── COLLECT / APPLY ──────────────────────────── */
       function collectData() {
-        const data = {};
-        document.querySelectorAll('#admin-panel input, #admin-panel textarea').forEach(el => {
-          if (el.id) data[el.id] = el.value;
-        });
+        const data={};
+        document.querySelectorAll('#admin-panel input, #admin-panel textarea').forEach(el=>{ if(el.id) data[el.id]=el.value; });
+        data.__deletedExp  = [..._del.exp];
+        data.__deletedPort = [..._del.port];
+        const covers={};
+        document.querySelectorAll('.port').forEach((art,i)=>{ if(art.dataset.cover) covers[i]=art.dataset.cover; });
+        data.__covers=covers;
         return data;
       }
 
-      // ── apply a data map to the DOM (silent) ──────
       function applyData(data) {
+        if(Array.isArray(data.__deletedExp)){
+          data.__deletedExp.forEach(i=>{ _del.exp.add(i); const row=document.querySelectorAll('.exp-row')[i]; if(row) row.style.display='none'; });
+        }
+        if(Array.isArray(data.__deletedPort)){
+          data.__deletedPort.forEach(i=>{ _del.port.add(i); const art=document.querySelectorAll('.port')[i]; if(art) art.style.display='none'; });
+        }
+        if(data.__covers && typeof data.__covers==='object'){
+          Object.entries(data.__covers).forEach(([idx,url])=>{
+            const art=document.querySelectorAll('.port')[parseInt(idx)];
+            if(art&&url){ art.dataset.cover=url; const prev=art.querySelector('.preview'); if(prev&&!prev.querySelector('.port-cover-img')){const img=document.createElement('img');img.className='port-cover-img';img.src=url;img.alt='';prev.prepend(img);} }
+          });
+        }
         panel.classList.add('open');
         populateFields();
-        Object.entries(data).forEach(([id, val]) => {
-          const el = document.getElementById(id);
-          if (el) { el.value = val; el.dispatchEvent(new Event('input')); }
+        const skip=new Set(['__deletedExp','__deletedPort','__covers']);
+        Object.entries(data).forEach(([id,val])=>{
+          if(skip.has(id)) return;
+          const el=document.getElementById(id);
+          if(el){ el.value=val; el.dispatchEvent(new Event('input')); }
         });
         panel.classList.remove('open');
       }
 
-      // ── publish to file via save-server ───────────
-      document.getElementById('adm-save').addEventListener('click', async () => {
-        const btn = document.getElementById('adm-save');
-        const data = collectData();
-        // Always save draft to localStorage
+      /* ── PUBLISH ──────────────────────────────────── */
+      document.getElementById('adm-save').addEventListener('click', async ()=>{
+        const btn=document.getElementById('adm-save'), data=collectData();
         localStorage.setItem('portfolio_admin_v1', JSON.stringify(data));
-        btn.textContent = 'Publishing…';
-        btn.disabled = true;
+        btn.textContent='Publishing…'; btn.disabled=true;
         try {
-          const res = await fetch('http://localhost:4322/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
-          if (!res.ok) throw new Error('Server error ' + res.status);
-          btn.textContent = '✓ Published!';
-          // Clear localStorage now that file is the source of truth
+          const res=await fetch('http://localhost:4322/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+          if(!res.ok) throw new Error('Server error '+res.status);
+          btn.textContent='✓ Published!';
           localStorage.removeItem('portfolio_admin_v1');
         } catch(e) {
-          btn.textContent = '⚠ Save server offline';
-          console.warn('Save server not reachable — changes saved to localStorage only.\nRun: node /Users/jahan/CV/save-server.js', e);
+          btn.textContent='⚠ Save server offline';
+          console.warn('Save server not reachable.\nRun: node /Users/jahan/CV/save-server.js', e);
         }
-        setTimeout(() => { btn.textContent = 'Publish to file'; btn.disabled = false; }, 2500);
+        setTimeout(()=>{ btn.textContent='Publish to file'; btn.disabled=false; }, 2500);
       });
 
-      // ── reset ─────────────────────────────────────
-      document.getElementById('adm-reset').addEventListener('click', () => {
-        if (!confirm('Reset all changes and reload from file?')) return;
-        localStorage.removeItem('portfolio_admin_v1');
-        location.reload();
+      /* ── RESET ────────────────────────────────────── */
+      document.getElementById('adm-reset').addEventListener('click',()=>{
+        if(!confirm('Reset all changes and reload from file?')) return;
+        localStorage.removeItem('portfolio_admin_v1'); location.reload();
       });
 
-      // ── restore on load: file data first, then localStorage draft ──
-      (function restoreOnLoad() {
-        // 1. Published data baked into the HTML file
-        let fileData = {};
-        try {
-          const tag = document.getElementById('portfolio-data');
-          if (tag) fileData = JSON.parse(tag.textContent.trim() || '{}');
-        } catch(e) {}
-
-        // 2. Unsaved localStorage draft (overrides file data for this session)
-        let draftData = {};
-        try {
-          const s = localStorage.getItem('portfolio_admin_v1');
-          if (s) draftData = JSON.parse(s);
-        } catch(e) {}
-
-        const data = { ...fileData, ...draftData };
-        if (Object.keys(data).length > 0) applyData(data);
+      /* ── RESTORE ON LOAD ──────────────────────────── */
+      (function restoreOnLoad(){
+        let fileData={}, draftData={};
+        try{ const tag=document.getElementById('portfolio-data'); if(tag) fileData=JSON.parse(tag.textContent.trim()||'{}')} catch(_){}
+        try{ const s=localStorage.getItem('portfolio_admin_v1'); if(s) draftData=JSON.parse(s); } catch(_){}
+        const data={...fileData,...draftData};
+        if(Object.keys(data).length>0) applyData(data);
       })();
+
+    })();
+
+    /* ═══════════════════════════════════════════════════
+       11. PROJECT OVERLAY — click any portfolio card
+    ═══════════════════════════════════════════════════ */
+    (function () {
+      const overlay   = document.getElementById('proj-overlay');
+      const closeBtn  = document.getElementById('proj-close');
+      const coverWrap = document.getElementById('proj-cover-wrap');
+      const catEl     = document.getElementById('proj-cat');
+      const yearEl    = document.getElementById('proj-year');
+      const titleEl   = document.getElementById('proj-title');
+      const descEl    = document.getElementById('proj-desc');
+      const tagsEl    = document.getElementById('proj-tags');
+      if (!overlay) return;
+
+      function openProject(art) {
+        const cat   = art.querySelector('.cat')?.textContent.trim()  || '';
+        const title = art.querySelector('h3')?.textContent.trim()    || '';
+        const year  = art.querySelector('.year')?.textContent.trim() || '';
+        const desc  = art.querySelector('p')?.textContent.trim()     || '';
+        const tags  = [...art.querySelectorAll('.stack span')].map(s => s.textContent.trim());
+        const cover = art.dataset.cover || '';
+
+        if (catEl)   catEl.textContent   = cat;
+        if (yearEl)  yearEl.textContent  = year;
+        if (titleEl) titleEl.textContent = title;
+        if (descEl)  descEl.textContent  = desc;
+        if (tagsEl)  tagsEl.innerHTML    = tags.map(t => `<span class="proj-tag">${t}</span>`).join('');
+
+        if (coverWrap) {
+          coverWrap.innerHTML = '';
+          if (cover) {
+            const img = document.createElement('img');
+            img.src = cover; img.alt = title;
+            coverWrap.appendChild(img);
+          } else {
+            coverWrap.innerHTML = '<span class="proj-cover-empty">No cover image yet</span>';
+          }
+        }
+
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        history.pushState({ proj: art.dataset.projIndex }, '', '#project/' + art.dataset.projIndex);
+      }
+
+      function closeProject() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+        if (location.hash.startsWith('#project/')) history.pushState({}, '', location.pathname + location.search);
+      }
+
+      // Assign indices and click handlers to all port articles
+      document.querySelectorAll('.port').forEach((art, i) => {
+        art.dataset.projIndex = i;
+        art.addEventListener('click', e => {
+          if (e.target.closest('a')) return;
+          openProject(art);
+        });
+      });
+
+      closeBtn?.addEventListener('click', closeProject);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProject(); });
+
+      // Handle direct hash URL on load
+      const m = location.hash.match(/^#project\/(\d+)$/);
+      if (m) {
+        const art = document.querySelectorAll('.port')[parseInt(m[1])];
+        if (art) setTimeout(() => openProject(art), 400);
+      }
+      window.addEventListener('popstate', () => {
+        if (!location.hash.startsWith('#project/')) closeProject();
+      });
     })();
 
     /* ═══════════════════════════════════════════════════
